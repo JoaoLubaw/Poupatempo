@@ -1,0 +1,40 @@
+# Define a versão da sintaxe do arquivo Docker Compose para garantir compatibilidade.
+version: "3.8"
+
+# Bloco principal onde todos os serviços (containers) da sua aplicação são definidos.
+services:
+    # Nome lógico do nosso serviço de banco de dados dentro deste arquivo.
+    banco-poupatempo:
+        # Especifica a imagem Docker que será usada para criar o container.
+        image: postgres:latest
+
+        # Define um nome fixo e amigável para o container, facilitando o gerenciamento.
+        container_name: poupatempo_db
+
+        # Política de reinicialização: o container sempre será iniciado com o Docker,
+        # a menos que seja parado manualmente pelo usuário.
+        restart: unless-stopped
+
+        # Define variáveis de ambiente que serão usadas para configurar o PostgreSQL
+        # na sua primeira inicialização.
+        environment:
+            POSTGRES_USER: admin_poupatempo # Cria um superusuário com este nome.
+            POSTGRES_PASSWORD: senha_poupatempo # Define a senha para o superusuário.
+            POSTGRES_DB: poupatempo_db # Cria um banco de dados com este nome.
+
+        # Mapeia as portas no formato "<PORTA_NA_SUA_MAQUINA>:<PORTA_DENTRO_DO_CONTAINER>".
+        ports:
+            - "1234:5432" # Redireciona a porta 1234 do seu computador para a porta 5432 do container.
+
+        # Define os volumes para persistir dados e carregar scripts.
+        volumes:
+            # Volume nomeado: garante que os dados do banco de dados sejam salvos e persistam
+            # mesmo que o container seja removido. É a forma mais recomendada.
+            - poupatempo_data:/var/lib/postgresql/data
+            # Bind mount: mapeia a pasta local "init" para a pasta especial do container
+            # que executa scripts .sql automaticamente na primeira inicialização.
+            - ./init:/docker-entrypoint-initdb.d
+
+# Declaração do volume nomeado usado pelo serviço acima.
+volumes:
+    poupatempo_data:
